@@ -1,0 +1,1288 @@
+엘라스틱의 모든 template 보기
+GET /_cat/templates
+
+template 구성보기
+GET /_template/search_schem?include_type_name=false
+or
+get /_template/search_schem
+
+querymatch search
+get /search/_search
+{
+  "query":{
+    "match":{
+      "author": "김종훈"
+    }
+  },
+  "sort": [
+		{
+			"created": {
+				"order": "desc"
+			}
+		}
+	]
+}
+
+get /sis.emate.search.v0.2/_search
+{
+	"query": {
+		"regexp": {
+		  "@filepath": ".*(/205007.nsf)"
+		}
+	},
+	"sort": {
+		"@lastmodified": {
+			"order": "desc"
+		}
+	}
+	
+}
+
+모든내용보기
+get /mariasearch/_search
+
+원래 있던 데이터 스키마 재정의
+post /_reindex
+{
+  "source": {
+    "index": "search"
+  },
+  "dest": {
+      "index": "newsearch"
+  }
+}
+
+get /_cat/templates
+
+delete template
+DELETE /_template/search_schem
+
+인덱스 삭제
+delete /search
+
+단일데이터입력
+post /search/_doc/AC547394AB54A3994925865300307F8C
+{
+  "subject":"안녕하세요",
+  "author":"강예은",
+  "dept":"도미노파트",
+  "created":"20210112",
+  "navigation":"GW-도미노",
+  "category":"apploval",
+  "attachnames":["a.ppt","b.ppt"]
+}
+or
+post /search/_doc/test30
+{
+  "created":"20210209T150001+09:00"
+}
+
+multi-search
+get /search/_msearch
+{"index":"search"}
+{"query":{"bool":{"filter":[{"match":{"category":"dept"}}],"must":[{"multi_match":{"operator":"OR","fields":["subject.search","body.search","author.search"],"type":"phrase","query":""}},{"terms":["CN=yeeun kang/O=saerom","yeeun kang","*","*/O=saerom","LocalDomainAdmins"]}]}},"size":3,"from":0,"sort":{"created":{"order":"desc"}}}
+{"index":"search"}
+{"query":{"bool":{"filter":[{"match":{"category":"person"}}],"must":[{"multi_match":{"operator":"OR","fields":["subject.search","body.search","author.search"],"type":"phrase","query":""}},{"terms":["CN=yeeun kang/O=saerom","yeeun kang","*","*/O=saerom","LocalDomainAdmins"]}]}},"size":3,"from":0,"sort":{"created":{"order":"desc"}}}
+{"index":"search"}
+{"query":{"bool":{"filter":[{"match":{"category":"board"}}],"must":[{"multi_match":{"operator":"OR","fields":["subject.search","body.search","author.search"],"type":"phrase","query":""}},{"terms":["CN=yeeun kang/O=saerom","yeeun kang","*","*/O=saerom","LocalDomainAdmins"]}]}},"size":3,"from":0,"sort":{"created":{"order":"desc"}}}
+{"index":"search"}
+{"query":{"bool":{"filter":[{"match":{"category":"approval"}}],"must":[{"multi_match":{"operator":"OR","fields":["subject.search","body.search","author.search"],"type":"phrase","query":""}},{"terms":["CN=yeeun kang/O=saerom","yeeun kang","*","*/O=saerom","LocalDomainAdmins"]}]}},"size":3,"from":0,"sort":{"created":{"order":"desc"}}}
+{"index":"searchkeyword"}
+{"size":0,"aggs":{"stations":{"terms":{"field":"keyword"}}},"query":{"range":{"created":{"gte":"20210123150000","lt":"20210126085153","format":"yyyyMMddHHmmss"}}}}
+{"index":"searchkeyword"}
+{"size":0,"aggs":{"stations":{"terms":{"field":"keyword"}}},"query":{"bool":{"must":{"bool":{"should":[{"multi_match":{"query":"","fields":"keyword.search","type":"phrase","operator":"or"}},{"multi_match":{"query":"","fields":"keyword.search","type":"phrase","operator":"or"}}]}}}}}
+
+집계데이터
+GET /searchkeyword/_search
+{
+	"size": 0,
+	"aggs": {
+		"stations": {
+			"terms": {
+				"field": "keyword"
+			}
+		}
+	}
+}
+or
+GET /searchkeyword/_search
+{
+	"size": 0,
+	"aggs": {
+		"stations": {
+			"terms": {
+				"field": "keyword"
+			}
+		}
+	},
+	"query": {
+		"bool": {
+		  "filter": {
+				"range": {
+					"created": {
+						"gte": "now-7M/d",
+						"lt": "now"
+					}
+				}
+			},
+			"must": {
+				"bool": {
+					"should": [
+						{
+							"multi_match": {
+								"query": "1000만1",
+								"fields": "keyword.search",
+								"type": "phrase",
+								"operator": "or"
+							}
+						},
+						{
+							"multi_match": {
+								"query": "강예은",
+								"fields": "keyword.search",
+								"type": "phrase",
+								"operator": "or"
+							}
+						}
+					]
+				}
+			}
+		}
+	}
+}
+
+boolmustterms
+get /search/_search
+{
+  "query": {
+		"bool": {
+			"must": [
+				{
+					"terms": {
+						"$readers": [
+							"강예은","김선호"
+						]
+					}
+				}
+			]
+		}
+	}
+}
+
+복잡한쿼리
+get /search/_search
+{
+  "aggs": {
+    "stations": {
+      "terms": {
+        "field": "body"
+      }
+    }
+  },
+	"query": {
+		"bool": {
+			"filter": {
+				"range": {
+					"created": {
+						"gte": "now-7M/d",
+						"lt": "now"
+					}
+				}
+			},
+			"must": [
+				{
+					"bool": {
+						"should": [
+							{
+								"multi_match": {
+									"query": "김선호",
+									"fields": [
+										"subject.search",
+										"body.search",
+										"author.search"
+									],
+									"type": "best_fields",
+									"operator": "or"
+								}
+							}
+						]
+					}
+				},
+				{
+					"multi_match": {
+						"query": "1000만유령",
+						"fields": [
+							"subject.search",
+							"body.search^3",
+							"author.search"
+						],
+						"type": "best_fields",
+						"operator": "or"
+					}
+				}
+			]
+		}
+	},
+	"size": 5,
+	"from": 0,
+	"sort": [
+		{
+			"created": {
+				"order": "desc"
+			}
+		}
+	]
+}
+
+스키마 정의
+put /_template/searchkeyword_schem
+{
+	"order": 1,
+	"index_patterns": [
+		"searchkeyword"
+	],
+	"settings": {
+		"index": {
+			"max_result_window": "20000000",
+			"refresh_interval": "1s",
+			"number_of_shards": "5",
+			"number_of_replicas": "0",
+			"analysis": {
+				"char_filter": {
+					"shampoo_cjk_prefix_filter": {
+						"type": "pattern_replace",
+						"pattern": "([^\\\\s\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])([\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])",
+						"replacement": "$1 $2"
+					},
+					"shampoo_cjk_suffix_filter": {
+						"type": "pattern_replace",
+						"pattern": "([\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])([^\\\\s\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])",
+						"replacement": "$1 $2"
+					}
+				},
+				"filter": {
+					"shampoo_word_delimiter": {
+						"type": "word_delimiter",
+						"generate_word_parts": "true",
+						"generate_number_parts": "true"
+					},
+					"shampoo_custom_stop_filter": {
+						"type": "stop",
+						"stopwords_path": "stopwords.dat"
+					},
+					"shampoo_english_stemmer_filter": {
+						"type": "stemmer",
+						"name": "english"
+					},
+					"shampoo_bigrams_filter": {
+						"type": "cjk_bigram"
+					}
+				},
+				"analyzer": {
+					"shampoo_search_analyzer": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": [
+							"shampoo_word_delimiter",
+							"lowercase",
+							"classic",
+							"shampoo_custom_stop_filter",
+							"shampoo_english_stemmer_filter",
+							"shampoo_bigrams_filter"
+						],
+						"char_filter": [
+							"shampoo_cjk_prefix_filter",
+							"shampoo_cjk_suffix_filter"
+						]
+					},
+					"shampoo_index_analyzer": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": [
+							"shampoo_word_delimiter",
+							"lowercase",
+							"classic",
+							"trim",
+							"shampoo_custom_stop_filter",
+							"shampoo_english_stemmer_filter",
+							"shampoo_bigrams_filter"
+						],
+						"char_filter": [
+							"html_strip",
+							"shampoo_cjk_prefix_filter",
+							"shampoo_cjk_suffix_filter"
+						]
+					},
+					"my_customer_ngram_analyzer": {
+						"tokenizer": "my_customer_ngram_tokenizer",
+						"filter": [
+							"lowercase",
+							"classic",
+							"trim"
+						]
+					}
+				},
+				"tokenizer": {
+					"my_customer_ngram_tokenizer": {
+						"type": "ngram"
+					}
+				}
+			}
+		}
+	},
+	"mappings": {
+		"data": {
+			"properties": {
+				"keyword": {
+				"type": "keyword",
+				"fields": {
+					"contains": {
+						"type": "text"
+					},
+					"search": {
+						"type": "text",
+						"search_analyzer": "my_customer_ngram_analyzer",
+						"analyzer": "my_customer_ngram_analyzer"
+					}
+				}
+			},
+			"created": {
+				"type": "date",
+				"format": "yyyyMMdd'T'HHmmssZ",
+				"fields": {
+					"contains": {
+						"type": "text"
+					},
+					"search": {
+						"type": "text",
+						"search_analyzer": "my_customer_ngram_analyzer",
+						"analyzer": "my_customer_ngram_analyzer"
+					}
+				}
+			}
+			}
+		}
+	}
+}
+
+put /_template/search_schem
+{
+	"order": 1,
+	"index_patterns": [
+		"search"
+	],
+	"settings": {
+		"index": {
+			"max_result_window": "20000000",
+			"refresh_interval": "1s",
+			"number_of_shards": "5",
+			"number_of_replicas": "0",
+			"analysis": {
+				"char_filter": {
+					"shampoo_cjk_prefix_filter": {
+						"type": "pattern_replace",
+						"pattern": "([^\\\\s\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])([\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])",
+						"replacement": "$1 $2"
+					},
+					"shampoo_cjk_suffix_filter": {
+						"type": "pattern_replace",
+						"pattern": "([\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])([^\\\\s\\\\u1100-\\\\u11FF\\\\u3130-\\\\u318F\\\\uAC00-\\\\uD7AF\\\\u2E80-\\\\u2EFF\\\\u31C0-\\\\u31EF\\\\u3200-\\\\u32FF\\\\u3400-\\\\u4DBF\\\\u4E00-\\\\u9FBF\\\\uF900-\\\\uFAFF\\\\u3040-\\\\u309F\\\\u30A0-\\\\u30FF\\\\u31F0-\\\\u31FF])",
+						"replacement": "$1 $2"
+					}
+				},
+				"filter": {
+					"shampoo_word_delimiter": {
+						"type": "word_delimiter",
+						"generate_word_parts": "true",
+						"generate_number_parts": "true"
+					},
+					"shampoo_custom_stop_filter": {
+						"type": "stop",
+						"stopwords_path": "stopwords.dat"
+					},
+					"shampoo_english_stemmer_filter": {
+						"type": "stemmer",
+						"name": "english"
+					},
+					"shampoo_bigrams_filter": {
+						"type": "cjk_bigram"
+					}
+				},
+				"analyzer": {
+					"shampoo_search_analyzer": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": [
+							"shampoo_word_delimiter",
+							"lowercase",
+							"classic",
+							"shampoo_custom_stop_filter",
+							"shampoo_english_stemmer_filter",
+							"shampoo_bigrams_filter"
+						],
+						"char_filter": [
+							"shampoo_cjk_prefix_filter",
+							"shampoo_cjk_suffix_filter"
+						]
+					},
+					"shampoo_index_analyzer": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": [
+							"shampoo_word_delimiter",
+							"lowercase",
+							"classic",
+							"trim",
+							"shampoo_custom_stop_filter",
+							"shampoo_english_stemmer_filter",
+							"shampoo_bigrams_filter"
+						],
+						"char_filter": [
+							"html_strip",
+							"shampoo_cjk_prefix_filter",
+							"shampoo_cjk_suffix_filter"
+						]
+					},
+					"my_customer_ngram_analyzer": {
+						"tokenizer": "my_customer_ngram_tokenizer",
+						"filter": [
+							"lowercase",
+							"classic",
+							"trim"
+						]
+					}
+				},
+				"tokenizer": {
+					"my_customer_ngram_tokenizer": {
+						"type": "ngram"
+					}
+				}
+			}
+		}
+	},
+	"mappings": {
+		"data": {
+			"properties": {
+			  "$readers":{
+			    "type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+			  },
+				"attachtext": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"body": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"filename": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"category": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"url": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"attached": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"photo": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"nav": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"created": {
+					"type": "date",
+					"format": "yyyyMMdd'T'HHmmssZ",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"author": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"dept": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"subject": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"docnumber": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"from": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"authorinfo": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"formname": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"formclass": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"completedate": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"completeyear": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"appdept1": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"appdept2": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"regyear": {
+					"type": "keyword",
+					"fields": {
+						"contains": {
+							"type": "text"
+						},
+						"search": {
+							"type": "text",
+							"search_analyzer": "my_customer_ngram_analyzer",
+							"analyzer": "my_customer_ngram_analyzer"
+						}
+					}
+				},
+				"readers": {
+					"type": "keyword"
+				},
+				"_universalid": {
+					"type": "keyword"
+				},
+				"_filepath": {
+					"type": "keyword"
+				},
+				"_noteid": {
+					"type": "keyword"
+				},
+				"_created": {
+					"type": "keyword"
+				},
+				"_lastmodified": {
+					"type": "keyword"
+				},
+				"_from": {
+					"type": "keyword"
+				},
+				"_form": {
+					"type": "keyword"
+				},
+				"file01": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file02": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file03": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file04": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file05": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file06": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file07": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file08": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file09": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file10": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file11": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file12": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file13": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file14": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file15": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file16": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file17": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file18": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file19": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file20": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file21": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file22": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file23": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file24": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file25": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file26": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file27": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file28": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file29": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file30": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file31": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file32": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file33": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file34": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file35": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file36": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file37": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file38": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file39": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file40": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file41": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file42": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file43": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file44": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file45": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file46": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file47": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file48": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file49": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file50": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file51": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file52": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file53": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file54": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file55": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file56": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file57": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file58": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file59": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file60": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file61": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file62": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file63": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file64": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file65": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file66": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file67": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file68": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file69": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file70": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file71": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file72": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file73": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file74": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file75": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file76": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file77": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file78": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file79": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file80": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file81": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file82": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file83": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file84": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file85": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file86": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file87": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file88": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file89": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file90": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file91": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file92": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file93": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file94": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file95": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file96": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file97": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file98": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				},
+				"file99": {
+					"type": "text",
+					"search_analyzer": "shampoo_search_analyzer",
+					"analyzer": "shampoo_index_analyzer"
+				}
+			}
+		}
+	}
+}

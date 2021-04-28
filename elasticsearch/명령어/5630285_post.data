@@ -1,0 +1,229 @@
+{
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"bool": {
+						"should": [
+							{
+								"term": {
+									"docstatus": "완료"
+								}
+							},
+							{
+								"term": {
+									"docstatus": "complete"
+								}
+							}
+						],
+						"minimum_should_match": 1
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"formclass": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"rdbkey": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"batch_idx": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"term": {
+						"_vc_view181_sv_$9": "10211Z"
+					}
+				}
+			],
+			"must": [
+				{
+					"terms": {
+						"readers": [
+							"cn=박영민/ou=10211/o=kbsart",
+							"박영민",
+							"*",
+							"*/ou=10211/o=kbsart",
+							"*/o=kbsart",
+							"docreaders_otherdept",
+							"sch_전사일정작성그룹",
+							"coi_c1509175552",
+							"a_336300",
+							"surveyadmin",
+							"docreaders_erp",
+							"docreaders_all",
+							"336300",
+							"개인그룹_gwadmin_그룹테스트1",
+							"gwadmin_개인그룹_그룹테스트1",
+							"gwadmin_그룹테스트1",
+							"개인그룹_10256_상조회",
+							"10256_개인그룹_상조회",
+							"10256_상조회",
+							"개인그룹_10211_내맘대로",
+							"10211_개인그룹_내맘대로",
+							"10211_내맘대로",
+							"usergroup",
+							"336000",
+							"i00000",
+							"m_366000",
+							"m_380000",
+							"m_390000",
+							"m_370000",
+							"[users]",
+							"[otherdeptviewer]",
+							"[users]",
+							"[erp]",
+							"[otherdeptviewer]",
+							"[users]",
+							"[sv_i00000]",
+							"[users]"
+						]
+					}
+				},
+				{
+					"match_phrase": {
+						"subject.search": {
+							"query": "솔루션"
+						}
+					}
+				}
+			]
+		}
+	},
+	"_source": {
+		"excludes": [
+			"body",
+			"readers",
+			"file01",
+			"file02",
+			"file03",
+			"file04",
+			"file05",
+			"file06",
+			"file07",
+			"file08",
+			"file09",
+			"file10",
+			"file11",
+			"file12",
+			"file13",
+			"file14",
+			"file15",
+			"file16",
+			"file17",
+			"file18",
+			"file19",
+			"file20",
+			"file21",
+			"file22",
+			"file23",
+			"file24",
+			"file25",
+			"file26",
+			"file27",
+			"file28",
+			"file29",
+			"file30",
+			"file31",
+			"file32",
+			"file33",
+			"file34",
+			"file35",
+			"file36",
+			"file37",
+			"file38",
+			"file39",
+			"file40",
+			"file41",
+			"file42",
+			"file43",
+			"file44",
+			"file45",
+			"file46",
+			"file47",
+			"file48",
+			"file49",
+			"file50",
+			"file51",
+			"file52",
+			"file53",
+			"file54",
+			"file55",
+			"file56",
+			"file57",
+			"file58",
+			"file59",
+			"file60",
+			"file61",
+			"file62",
+			"file63",
+			"file64",
+			"file65",
+			"file66",
+			"file67",
+			"file68",
+			"file69",
+			"file70",
+			"file71",
+			"file72",
+			"file73",
+			"file74",
+			"file75",
+			"file76",
+			"file77",
+			"file78",
+			"file79",
+			"file80",
+			"file81",
+			"file82",
+			"file83",
+			"file84",
+			"file85",
+			"file86",
+			"file87",
+			"file88",
+			"file89",
+			"file90",
+			"file91",
+			"file92",
+			"file93",
+			"file94",
+			"file95",
+			"file96",
+			"file97",
+			"file98",
+			"file99"
+		]
+	},
+	"from": "0",
+	"size": "50",
+	"sort": [
+		{
+			"_vc_view181_sv_$35": {
+				"order": "desc"
+			}
+		}
+	]
+}

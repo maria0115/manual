@@ -1,0 +1,15 @@
+1. https://www.oracle.com/database/technologies/instant-client.html 접속
+
+2. 'Download' 선택 :
+
+3. node.js 가 설치된 OS와 동일한 버전 선택 : https://www.oracle.com/database/technologies/instant-client/downloads.html
+
+4. Basic Package와 SDK Package 다운로드
+
+5. Basic Package 압축을 푼다.
+
+6. SKD Package 압축을 푼 다음 'admin', 'demo', 등의 폴더가 있는 폴더를 전체 복사하여 Basic Package 압축 푼 폴더안으로 붙여넣는다. (Basic Package 압축 푼 폴더에 'vc14' 폴더가 보인는 곳에 붙여넣는다)
+* nodejs/app/jdbc/oracle/instantclient 폴더로 생성하면 좋다
+* nodejs/app/jdbc/lib/oracle/instantclient 폴더로 생성하면 좋다
+
+7. 시스템 변수에 PATH에 해당 디렉터리를 추가한다

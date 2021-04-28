@@ -1,0 +1,118 @@
+1. 디스크 용량
+approval	2.23        => 5.27
+bbs	        0.169       => 0.601
+legal   	0.012       => 0.040
+port	    0.025       => 0.102
+voyage	    23.6        => 102
+	        26.036      => 108.013
+
+"start_time_in_millis" : 1597222271924,
+"running_time_in_nanos" : 579079198717,
+
+approval
+size: 2.23Gi (2.23Gi)
+docs: 943,679 (943,679)
+
+approval_v1.0
+size: 5.14Gi (5.14Gi)
+docs: 943,661 (943,661)
+
+reindex 추가: 9:58 ~ 
+                    11:04 => 1,065,875
+        total: 6,765,051
+
+/*템플리트 확인*/
+GET /_template/template_approval?include_type_name=false
+GET /_template/template_bbs?include_type_name=false
+GET /_template/template_legal?include_type_name=false
+GET /_template/template_port?include_type_name=false
+GET /_template/template_voyage?include_type_name=false
+
+GET /_template/template_approval_v1.0?include_type_name=false
+GET /_template/template_bbs_v1.0?include_type_name=false
+GET /_template/template_legal_v1.0?include_type_name=false
+GET /_template/template_port_v1.0?include_type_name=false
+GET /_template/template_voyage_v1.0?include_type_name=false
+
+/*템플리트 생성*/
+
+
+/*reindex 수행*/
+POST _reindex?wait_for_completion=false
+{
+  "source": {
+    "index": "approval"
+  },
+  "dest": {
+    "index": "approval_v1.0"
+  }
+}
+
+/*reindex 수행 - 신규문서 추가*/
+POST _reindex?wait_for_completion=false
+{
+    "conflicts": "proceed",
+    "source": {
+        "index": "approval"
+    },
+    "dest": {
+        "index": "approval_v1.0",
+        "version_type": "external"
+    }
+}
+
+/*reindex task 수행 중인지 확인*/
+GET _tasks?detailed=true&actions=*reindex
+
+/*index 삭제*/
+DELETE approval
+
+/*alias 지정*/ ==> /*alias지정은 elasticsearch head를 이용해서 수행함*/
+POST _aliases 
+{
+   "actions": [
+      {
+         "add": {
+            "index": "approval_v1.0",
+            "alias": "approval"
+          } 
+      } 
+    ] 
+}
+
+/* 이미 있는 데이터의 settings값 변경
+PUT /my_index/_settings
+{
+"refresh_interval": "1s"
+}
+
+
+/*search subject*/
+GET /approval_v1.0/_doc/_search
+{
+    "query": {
+        "bool": {
+            "filter": [{
+                "term": {
+                    "docstatus": "완료"
+                }
+            }],
+            "must": [{
+                "terms": {
+                    "readers": ["[sysadmin]","[appadmin]"]
+                }
+            }, {
+                "match_phrase": {
+                    "subject.search": 
+                        "query": "퇴직금계산서"
+                    }
+                }
+            }]
+        }
+    },
+    "_source": {
+        "excludes": ["body", "readers", "file01", "file02", "file03", "file04", "file05", "file06", "file07", "file08", "file09", "file10", "file11", "file12", "file13", "file14", "file15", "file16", "file17", "file18", "file19", "file20", "file21", "file22", "file23", "file24", "file25", "file26", "file27", "file28", "file29", "file30", "file31", "file32", "file33", "file34", "file35", "file36", "file37", "file38", "file39", "file40", "file41", "file42", "file43", "file44", "file45", "file46", "file47", "file48", "file49", "file50", "file51", "file52", "file53", "file54", "file55", "file56", "file57", "file58", "file59", "file60", "file61", "file62", "file63", "file64", "file65", "file66", "file67", "file68", "file69", "file70", "file71", "file72", "file73", "file74", "file75", "file76", "file77", "file78", "file79", "file80", "file81", "file82", "file83", "file84", "file85", "file86", "file87", "file88", "file89", "file90", "file91", "file92", "file93", "file94", "file95", "file96", "file97", "file98", "file99"]
+    },
+    "from": "0",
+    "size": "15"
+}

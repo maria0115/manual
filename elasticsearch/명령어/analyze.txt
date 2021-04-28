@@ -1,0 +1,256 @@
+put /_template/mariatest_schem
+{
+	"order": 1,
+	"index_patterns": [
+		"mariatest"
+	],
+	"settings" : {
+      "index" : {
+        "max_result_window" : "20000000",
+        "refresh_interval" : "1s",
+        "analysis" : {
+          "filter" : {
+            "shampoo_custom_stop_filter" : {
+              "type" : "stop",
+              "stopwords_path" : "stopwords.dat"
+            },
+            "shampoo_word_delimiter" : {
+              "generate_word_parts" : "true",
+              "type" : "word_delimiter",
+              "generate_number_parts" : "true"
+            },
+            "shampoo_bigrams_filter" : {
+              "type" : "cjk_bigram"
+            },
+            "shampoo_english_stemmer_filter" : {
+              "name" : "english",
+              "type" : "stemmer"
+            }
+          },
+          "analyzer" : {
+            "shampoo_search_analyzer" : {
+              "filter" : [
+                "shampoo_word_delimiter",
+                "lowercase",
+                "classic",
+                "shampoo_custom_stop_filter",
+                "shampoo_english_stemmer_filter",
+                "shampoo_bigrams_filter"
+              ],
+              "char_filter" : [
+                "shampoo_cjk_prefix_filter",
+                "shampoo_cjk_suffix_filter"
+              ],
+              "type" : "custom",
+              "tokenizer" : "standard"
+            },
+            "shampoo_index_analyzer" : {
+              "filter" : [
+                "shampoo_word_delimiter",
+                "lowercase",
+                "classic",
+                "trim",
+                "shampoo_custom_stop_filter",
+                "shampoo_english_stemmer_filter",
+                "shampoo_bigrams_filter"
+              ],
+              "char_filter" : [
+                "html_strip",
+                "shampoo_cjk_prefix_filter",
+                "shampoo_cjk_suffix_filter"
+              ],
+              "type" : "custom",
+              "tokenizer" : "standard"
+            },
+			"my_customer_ngram_analyzer":{
+				"tokenizer":"my_customer_ngram_tokenizer",
+				"filter": [
+					"lowercase",
+					"classic",
+					"trim"
+				]
+			}
+          },
+          "char_filter" : {
+            "shampoo_cjk_suffix_filter" : {
+              "pattern" : """([\\u1100-\\u11FF\\u3130-\\u318F\\uAC00-\\uD7AF\\u2E80-\\u2EFF\\u31C0-\\u31EF\\u3200-\\u32FF\\u3400-\\u4DBF\\u4E00-\\u9FBF\\uF900-\\uFAFF\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF])([^\\s\\u1100-\\u11FF\\u3130-\\u318F\\uAC00-\\uD7AF\\u2E80-\\u2EFF\\u31C0-\\u31EF\\u3200-\\u32FF\\u3400-\\u4DBF\\u4E00-\\u9FBF\\uF900-\\uFAFF\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF])""",
+              "type" : "pattern_replace",
+              "replacement" : "$1 $2"
+            },
+            "shampoo_cjk_prefix_filter" : {
+              "pattern" : """([^\\s\\u1100-\\u11FF\\u3130-\\u318F\\uAC00-\\uD7AF\\u2E80-\\u2EFF\\u31C0-\\u31EF\\u3200-\\u32FF\\u3400-\\u4DBF\\u4E00-\\u9FBF\\uF900-\\uFAFF\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF])([\\u1100-\\u11FF\\u3130-\\u318F\\uAC00-\\uD7AF\\u2E80-\\u2EFF\\u31C0-\\u31EF\\u3200-\\u32FF\\u3400-\\u4DBF\\u4E00-\\u9FBF\\uF900-\\uFAFF\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF])""",
+              "type" : "pattern_replace",
+              "replacement" : "$1 $2"
+            }
+          },
+          "tokenizer":{
+              "my_customer_ngram_tokenizer":{
+                  "type":"ngram"
+              }
+          }
+        },
+        "number_of_shards" : "5",
+        "number_of_replicas" : "0"
+      }
+    },
+	"mappings": {
+	  "data":{
+			"properties": {
+				"name": {
+				"type" : "keyword",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"email": {
+				"type" : "keyword",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"password": {
+				"type" : "keyword"
+			},
+			"lastname": {
+				"type" : "keyword",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"role": {
+				"type" : "integer",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"image": {
+				"type" : "keyword",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"token": {
+				"type" : "keyword",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			},
+			"tokenExp": {
+				"type" : "integer",
+          "fields":{
+            "contains":{
+                "type":"text"
+            },
+            "search":{					
+                "type": "text",
+                "search_analyzer": "my_customer_ngram_analyzer",
+                "analyzer":"my_customer_ngram_analyzer"
+            }
+          }
+			}
+			}
+		
+	}}
+}
+
+get /mariatest/_search
+{
+  "query":{
+    "match": {
+      "email": "searom.co.kr"
+    }
+  }
+}
+
+get /mariatest/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "_id": "wj4SincBLQ2Gk2X6J9IA"
+          }
+        },
+        {
+          "match": {
+            "token" : "eyJhbGciOiJIUzI1NiJ9.d2o0U2luY0JMUTJHazJYNko5SUE.Pj6Xmb-4oxozrwTzs66LC3ltrnA6ezu4D1AxT2cYWN0"
+          }
+        }
+      
+      ]
+      
+    }
+  }
+}
+
+get /sis.emate.search.v0.2/_search
+{
+  "query":{
+    "match": {
+      "body.search": "안녕하 세요"
+    }
+  }
+}
+
+get /sis.emate.search.v0.2/_doc/_mtermvectors
+{
+  "ids": [ "5D294DD149F6A583492580820003DF1D" ],
+  "parameters": {
+    "fields": [
+      "body.search","author.search","attachtext.search"
+    ],
+    "term_statistics": true
+  }
+}
+
+post /sis.emate.search.v0.2/_analyze
+{
+    "analyzer":"my_customer_ngram_analyzer",
+    "text":"안녕하세요.날씨가 이제 제법 추워지고 있습니다.건강에 유의하시기 바랍니다. IBM에서 12월21일 Watson Explorer 파트너사 대상으로 교육을 한다고 합니다. ㅇ 일자 : 12월21일 오후 1시30 ~ 5시까지ㅇ 장소 : IBM 본사  7층 (여의도)ㅇ 교육내용 : 첨부파일 참조 좌석 제한이 되어 있나봅니다. 12.20일(화)까지 신청을해야 합니다.일정이 되시는 분은 참석하실 수 있도록 저에게 연락을 주시기 바랍니다.AI 솔루션에 관심있는 분들은 좋은 기회라고 생각이 듭니다. 이상입니다. 감사합니다. - IBM Watson Explorer 파트너 교육 안내 (2016년 12"
+}
+
+
+get /_template/search_schem

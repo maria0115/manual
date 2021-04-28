@@ -1,0 +1,490 @@
+문서 업데이트
+POST /customer/_doc/1/_update?pretty { "doc": { "name": "Jane Doe", "age": 20 } }
+
+문서추가
+POST /customer/_doc/1/_update?pretty { "doc": { "name": "Jane Doe" } }
+
+벌그파일로 일괄 문서추가
+curl -X POST 'localhost:9200/victolee/test/_bulk?pretty' -H 'Content-Type: application/x-ndjson' --data-binary @query.json
+
+query.json파일로 일괄처리
+파일의 내용은 명령어+내용의 2줄로 구성
+{ "create" : {"_id" : "2" } } 
+{ "name" : "name_create2" }
+{ "update" : {"_id" : "2" } } 
+{ "doc" : { "name" : "name_update" } }
+벌크  기능 이용하여 마이그레이션 및 보기 열 변경시 일괄 업데이트 가능
+
+벌크 공식 URL
+curl -XPOST localhost:9200/{index}/{type}/_bulk –data-binary @파일명
+
+인덱스 생성- 내용이 없는 껍데기 인덱스
+PUT /appro_2019 
+
+인덱스 생성 - 내용이 있는 인덱스
+PUT /appro_2019/_doc/49258201003C7C1449258297001C0A74
+{
+  "subject": "제목입니다"
+} 
+
+인덱스 삭제 - 전체삭제
+DELETE appro_2019 
+
+인덱스 삭제 - 단일문서삭제
+DELETE appro_2019/_doc/49258201003C7C1449258297001C0A74
+
+인덱스 삭제 - 조건에 맞는 문서삭제
+docstatus = "complete" 이고
+completedate가 "2019년09월18일오후00시00분00초" ~ "2019년09월18일오후11시59분59초"
+GET /approval/_doc/_delete_by_query
+{"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"range": {
+						"completedate": {
+							"gte": "20190918000000",
+							"lte": "2019091823595910"
+						}
+					}
+				}
+			]
+		}
+	}
+}
+
+인덱스 조회 - 전체 조회
+GET /approval/_doc/_search 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 문서에서 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+readers = "신민재/123456789/saerom" 인 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고 sabun = "987654321" 이고
+   readers = "신민재/123456789/saerom" 인 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+ sabun = "987654321" 이고
+ readers = "신민재/123456789/saerom" 이고
+ formclass 필드가 존재하지 않는 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				}
+			],
+			"must_not": {
+				"exists": {
+					"field": "formclass"
+				}
+			}
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+ sabun = "987654321" 이고
+ readers = "신민재/123456789/saerom" 이고
+ formclass 필드가 존재하는 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				}
+				{
+					"exists": {
+						"field": "formclass"
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+ sabun = "987654321" 이고
+ readers = "신민재/123456789/saerom" 이고
+ subject 필드에 "내부 저장 공간" 텍스트가 포함되어 있는  문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				},
+				{
+					"match": {
+						"subject": {
+							"query": "내부 저장 공간",
+							"operator": "and"
+						}
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+ sabun = "987654321" 이고
+ readers = "신민재/123456789/saerom" 이고
+ subject 필드에 "내부 저장 공간" 텍스트가 포함되어 있고
+ 날짜형태인 completedate 필드값의 기간이 => 20181231000000 ~ 20181231235959 인
+ 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				},
+				{
+					"match": {
+						"subject": {
+							"query": "내부 저장 공간",
+							"operator": "and"
+						}
+					}
+				},
+				{
+					"range": {
+						"completedate": {
+							"gte": "20181231000000",
+							"lte": "20181231235959"
+						}
+					}
+				}
+			]
+		}
+	}
+} 
+인덱스 조회 - 조건에 맞는 문서를 조회
+docstatus = "complete" 이고
+ sabun = "987654321" 이고
+ readers = "신민재/123456789/saerom" 이고
+ subject 필드에 "내부 저장 공간" 텍스트가 포함되어 있고
+ 날짜형태인 completedate 필드값의 기간이 => 20181231000000 ~ 20181231235959 이고
+ 소트의 기준을 completedate 으로 하여 내림차순으로 정렬한
+ 문서를 200건만 조회
+* term 명령어 = 필드값에 1개의 값만 있는경우 정의함
+* terms 명령어 = 필드값에 2개이상의 값이 있을경우 정의함
+GET /approval/_doc/_search
+{
+	"from": "0",
+	"size": "201",
+	"query": {
+		"bool": {
+			"must": [
+				{
+					"term": {
+						"docstatus": "complete"
+					}
+				},
+				{
+					"term": {
+						"sabun": "987654321"
+					}
+				},
+				{
+					"terms": {
+						"readers": [
+							"신민재/123456789/saerom"
+						]
+					}
+				},
+				{
+					"match": {
+						"subject": {
+							"query": "내부 저장 공간",
+							"operator": "and"
+						}
+					}
+				},
+				{
+					"range": {
+						"completedate": {
+							"gte": "20181231000000",
+							"lte": "20181231235959"
+						}
+					}
+				}
+			]
+		}
+	},
+	"sort": {
+		"completedate": {
+			"order": "desc"
+		}
+	}
+} 
+템플릿 확인
+GET /_template/템플릿명?include_type_name=false 
+
+템플릿 삭제
+DELETE /_template/템플릿명?include_type_name=false 
+
+인덱스에 대해서 매핑 확인
+GET approval/_mappings 
+
+인덱스에 대해서 세팅 확인
+GET approval/_settings 
+
+해당 인덱스에서 특정 텍스트값을 한글분석처리하여 들어가는 내용 확인
+POST /approval/_analyze
+{
+  "analyzer": "shampoo_search_analyzer",
+  "text":     "[새롬 영상설계 신민재] DVRS 내부 저장 공간 분할 문서 송부"
+} 
+
+해당 인덱스에서 subject 값이 "민주노총" 인 문서들에 대해서
+결과값을 조회할때 pre_tags , post_tags 에 정의한 태그값을 추가하여 표시
+GET /approval/_doc/_search
+{
+  "query": {
+    "match": {
+      "subject": "민주노총"
+    }
+  },
+  "highlight": {
+    "fields": {
+      "subject": {}
+    },
+    "pre_tags": ["<em class=\"matched-term\">"],
+    "post_tags": ["</em>"]
+  }
+} 
+
+appro 인덱스에 존재하는 모든 문서들을 복사하여
+approval 인덱스에 문사를 붙여넣음
+POST _reindex?wait_for_completion=false
+{
+  "source": {
+    "index": "appro"
+  },
+  "dest": {
+    "index": "approval"
+  }
+}
+
+match 쿼리와 match_phrase 쿼리의 차이
+검색어에 띄어쓰기가 없으면 동일한 결과이나, 띄어쓰기가 존재하면 match 쿼리는 띄어쓰기 단어를 OR 검색하고, match_phrase는 띄어쓰기를 포함한 문장을 검색한다.
+GET /_search
+{
+  "query": {
+    "match": {
+      "title": "박근혜 한반도"
+    }
+  }
+}
+위의 예는 문서의 'title'라는 필드의 값에 '박근혜'와 '한반도' 두 단어 중 하나라도 포함된 문서를 검색한다.
+
+2개 이상의 필드를 가지고 or 검색하는 경우
+GET /approcomplete/_search
+{
+  "from": "0",
+	"size": "100",
+	"query": {
+		"bool": {
+			"should": [
+			  {
+			    "match_phrase": {
+					"subject": {
+						"query": "제작건"
+				  	}
+			  	}
+		  	},
+			  {
+			    "match_phrase": {
+					"subject": {
+						"query": "삼성"
+				  	}
+			  	}
+		  	}
+			],
+	  "minimum_should_match": 1
+		}
+	}
+}
+
+2개 이상의 필드를 가지고 and 검색하는 경우
+GET /approcomplete/_search
+{
+  "from": "0",
+	"size": "100",
+	"query": {
+		"bool": {
+			"must": [
+			  {"match_phrase": {
+					"subject": {
+						"query": "제작건"
+				  	}
+			  	}
+		  	},
+			  {"match_phrase": {
+					"subject": {
+						"query": "삼성"
+				  	}
+			  	}
+		  	}
+			]
+		}
+	}
+}

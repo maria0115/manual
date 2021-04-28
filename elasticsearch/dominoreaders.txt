@@ -1,0 +1,22 @@
+{
+	"readers": [
+		"2000008/kskc2000008/SKC",
+		"admin/skc,LocalDomainServers",
+		"2160003/kskc2160003/SKC",
+		"2050048/kskc2050048/SKC",
+		"2000116/kskc2000116/SKC",
+		"1940009/kskc1940009/SKC",
+		"[SystemAdmin]",
+		"[ContentsOwner]",
+		"결재양식01-통보서_담당자",
+		"LocalDomainServers",
+		"SystemAdministrators",
+		"LocalDomainAdmins",
+		"ComReaders",
+		"LegalReaders",
+		"EtcReaders",
+		"K-SKC_Readers",
+		"K-SKC_FormB001_Readers",
+		"[PartialAdmin]"
+	]
+}

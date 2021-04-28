@@ -1,0 +1,6 @@
+var oracledb = require('oracledb');
+1. nodejs/app/jdbc로 이동
+2. npm install --save oracledb
+
+express 모듈 설치
+> npm install --save express

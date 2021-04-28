@@ -1,0 +1,1 @@
+curl -X POST -k -L --connect-timeout 120 -H "Content-Type:application/json" -A "Mozilla/5.0" -H "Accept-Language: ko-kr,ko;q=0.8,en-us;" -H "Authorization:Basic ZWxhc3RpYzoxMjMhQCNxd2U=" --data-binary @C:\Users\user\Desktop\회사\manual\elasticsearch\data\el.json http://125.7.235.202:19200/_bulk

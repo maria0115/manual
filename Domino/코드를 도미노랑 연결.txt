@@ -1,0 +1,21 @@
+vue init webpack 프로젝트명
+
+npm run build
+ - dist 폴더 생성
+ - index.html 코드복사
+
+디자이너에서 homepage.nsf 안에 resources - Files - index.html생성
+붙여넣기
+
+pages 새 page 생성
+<script>
+location.href = "/<Computed Value>/index.html"
+</script>
+ - <Computed Value> - @WebDBName
+ - 소스 전체 선택 후 Text path thru html
+
+notes Homepage
+- application - properties - 로켓 - 만든페이지 이름 선택
+
+C:\Program Files\HCL\Domino\Data\domino\html 에 
+D:\vuejs\hellovue\dist 파일두개이상 복사하고 붙여넣기

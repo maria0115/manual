@@ -1,0 +1,80 @@
+{
+	"query": {
+		"bool": {
+			"filter": [
+				{
+					"bool": {
+						"should": [
+							{
+								"term": {
+									"docstatus": "완료"
+								}
+							},
+							{
+								"term": {
+									"docstatus": "complete"
+								}
+							}
+						],
+						"minimum_should_match": 1
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"formclass": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"rdbkey": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"bool": {
+						"must": [
+							{
+								"term": {
+									"batch_idx": ""
+								}
+							}
+						]
+					}
+				},
+				{
+					"term": {
+						"_vc_view181_sv_$9": "10211Z"
+					}
+				}
+			],
+			"must": [
+				{
+					"terms": {
+						"readers": 
+					}
+				},
+				
+			]
+		}
+	},
+	"from": "0",
+	"size": "50",
+	"sort": [
+		{
+			"_vc_view181_sv_$35": {
+				"order": "desc"
+			}
+		}
+	]
+}

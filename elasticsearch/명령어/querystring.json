@@ -1,0 +1,13 @@
+{
+  "query": {
+    "bool" : {
+      "must" : {
+        "term" : { "text_field" : "best" }
+      },
+      "must_not" : {
+        "query_string": {
+		"default_field": "text_field", "query": "best regards\"}
+      }
+   }
+}
+}

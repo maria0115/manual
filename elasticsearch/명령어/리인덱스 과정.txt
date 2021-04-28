@@ -1,0 +1,38 @@
+수정된 template 원본과 비교 Compare *
+
+디비 용량확인 *
+
+17Gb 리인덱스 시 1시간정도
+
+리인덱스 과정
+post /_reindex?wait_for_completion=false
+{
+  "source": {
+    "index": "approval"
+  },
+  "dest": {
+      "index": "approvalcopy"
+  }
+}
+
+1 index 복사
+
+
+DELETE /approval
+2 기존 index 삭제
+
+post /_reindex?wait_for_completion=false
+{
+  "source": {
+    "index": "approvalcopy"
+  },
+  "dest": {
+      "index": "approval"
+  }
+}
+3 복사된 index 를 기존 index 에 데이터 붓기
+
+DELETE /approvalcopy
+4 복사된 index 삭제
+
+

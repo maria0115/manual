@@ -1,0 +1,2 @@
+{ "index":{ "_index" : "mariasearch","_id" : "1" } }
+{ "subject":"안녕"}

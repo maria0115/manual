@@ -1,0 +1,3 @@
+instances:
+  - name: "CN=elastic7,OU=vault,DC=saerom,DC=com"
+    filename: "elastic7-certificates"

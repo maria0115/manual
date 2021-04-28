@@ -1,0 +1,38 @@
+- ElasticSearch 백업 - 
+
+1. elasticsearch.yml 파일에 하단 내용 추가
+   # Backup
+   path.repo : ["D:/elastic/elasticsearch-6.8.0/backups"]
+   
+2. Repogitory 생성
+PUT /_snapshot/backups
+  {
+    "type": "fs",
+    "settings": {
+    "compress": true,
+    "location": "D:/elastic/elasticsearch-6.8.0/backups"
+  }
+} 
+
+3. Repogitory 생성 확인
+GET /_snapshot/backups 
+
+4. Database 백업(스냅샷)
+PUT /_snapshot/backups/approcomplete_20200128145200?wait_for_completion=true
+{
+  "indices": "approcomplete",
+  "ignore_unavailable": true,
+  "include_global_state": true
+} 
+
+5. Database 백업 생성 확인
+GET /_snapshot/backups/approcomplete_20200128145200 
+
+5_1 Database 백업된 모든 내용 확인
+GET /_snapshot/backups/_all 
+
+6. Database 백업된 내용 삭제
+DELETE /_snapshot/backups/approcomplete_20200128145200 
+
+6_1 Database 백업된 모든 내용 삭제
+DELETE /_snapshot/backups/_all
